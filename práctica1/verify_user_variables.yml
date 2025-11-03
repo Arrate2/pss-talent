@@ -1,0 +1,28 @@
+- name: Verify users were created
+  hosts: servidores
+  become: yes
+
+  vars_files:
+    - usuarios.yml
+  
+  tasks:
+    - name: Verify user exists
+      ansible.builtin.user:
+        name: "{{ item }}"
+      check_mode: true
+      register: user_check
+      loop: "{{ usuarios }}"
+
+    - name: The users were created
+      ansible.builtin.debug:
+        msg: "{{ item.item }} was created"
+      loop: "{{ user_check.results }}"
+      when: item.changed == false
+      
+    - name: Output user status to file
+      ansible.builtin.lineinfile:
+        path: /home/student/verify.txt
+        line: "{{ item.item }} was created"
+        create: true
+      loop: "{{user_check.results }}"
+      when: item.changed == false

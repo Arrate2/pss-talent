@@ -1,0 +1,49 @@
+- name: Instalación y puesta en marcha
+  hosts: servidores
+  become: true
+
+  tasks:
+    - name: Instalando httpd 
+      ansible.builtin.package:
+        name: httpd
+        state: present
+    - name: Iniciando el servicio httpd y habilitandolo al inicio
+      ansible.builtin.service:
+        name: httpd
+        state: started
+        enabled: true
+    - name: Crear el directorio del vhost personalizado (DocumentRoot)
+      ansible.builtin.file:
+        path: "/var/www/vhosts/{{ inventory_hostname }}"
+        state: directory
+        owner: apache
+        group: apache
+        mode: '0755'
+    - name: Copiar index.html al directorio del vhost
+      ansible.builtin.copy:
+        src: files/index.html
+        dest: "/var/www/vhosts/{{ inventory_hostname }}/index.html"
+        owner: apache
+        group: apache
+        mode: '0644'
+    - name: Desplegando el template vhost.conf.j2 y notificando al handler
+      ansible.builtin.template:
+        src: templates/vhost.conf.j2
+        dest: /etc/httpd/conf.d/vhost.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart httpd
+    - name: Configurar el firewall para httpd (80/tcp y 443/tcp)
+      ansible.posix.firewalld:
+        service: "{{ item }}"
+        permanent: true
+        state: enabled
+      loop:
+        - http
+        - https
+  handlers:
+      - name: Restart httpd
+        ansible.builtin.service:
+          name: httpd
+          state: restarted

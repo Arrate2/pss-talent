@@ -1,0 +1,23 @@
+- name: Creando usuarios en remoto
+  hosts: servidores
+  become: true
+  vars:
+    packages:
+      - memcached
+      - mariadb-server
+
+  tasks:
+    - name: Creando usuario Carlos
+      ansible.builtin.user: 
+        name: carlos
+        state: present
+    - name: Creando usuario Marta
+      ansible.builtin.user:
+        name: marta
+        state: present
+
+    - name: Instalar el paquete redis si el swap total es > 20MB
+      ansible.builtin.package:
+        name: redis
+        state: present
+      when: ansible_swapfree_mb > 20

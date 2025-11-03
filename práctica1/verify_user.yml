@@ -1,0 +1,41 @@
+---
+- name: Verify the carlos user was created
+  hosts: servidores
+
+  tasks:
+
+    - name: Verify the carlos user exists
+      ansible.builtin.user:
+        name: carlos
+      check_mode: true
+      register: carlos_check
+
+    - name: Carlos was created
+      ansible.builtin.debug:
+        msg: "Carlos was created"
+      when: carlos_check['changed'] == false
+
+    - name: Output carlos user status to file
+      ansible.builtin.lineinfile:
+        path: /home/student/verify.txt
+        line: "Carlos was created"
+        create: true
+      when: carlos_check['changed'] == false
+
+    - name: Verify the marta user exists
+      ansible.builtin.user:
+        name: marta
+      check_mode: true
+      register: marta_check
+
+    - name: Marta was created
+      ansible.builtin.debug:
+        msg: "Marta was created"
+      when: marta_check['changed'] == false
+
+    - name: Output marta user status to file
+      ansible.builtin.lineinfile:
+        path: /home/student/verify.txt
+        line: "Marta was created"
+        create: true
+      when: marta_check['changed'] == false

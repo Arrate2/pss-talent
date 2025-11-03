@@ -16,22 +16,16 @@
       ansible.builtin.file:
         path: "/var/www/vhosts/{{ inventory_hostname }}"
         state: directory
-        owner: apache
-        group: apache
         mode: '0755'
     - name: Copiar index.html al directorio del vhost
       ansible.builtin.copy:
         src: files/index.html
         dest: "/var/www/vhosts/{{ inventory_hostname }}/index.html"
-        owner: apache
-        group: apache
         mode: '0644'
     - name: Desplegando el template vhost.conf.j2 y notificando al handler
       ansible.builtin.template:
         src: templates/vhost.conf.j2
         dest: /etc/httpd/conf.d/vhost.conf
-        owner: root
-        group: root
         mode: '0644'
       notify: Restart httpd
     - name: Configurar el firewall para httpd (80/tcp y 443/tcp)
@@ -39,6 +33,7 @@
         service: "{{ item }}"
         permanent: true
         state: enabled
+        immediate: yes
       loop:
         - http
         - https

@@ -1,0 +1,233 @@
+\documentclass[11pt, a4paper]{article}
+
+% --- UNIVERSAL PREAMBLE BLOCK ---
+\usepackage[a4paper, top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
+% \usepackage{fontspec}
+
+\usepackage[spanish, bidi=basic, provide=*]{babel}
+
+\babelprovide[import, onchar=ids fonts]{spanish}
+\babelprovide[import, onchar=ids fonts]{english}
+
+
+
+\usepackage{enumitem}
+\setlist[itemize]{label=-}
+% --- END UNIVERSAL PREAMBLE BLOCK ---
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+
+% Configuración del listado para código: Usamos 'bash' o 'text' como alternativa 
+% ya que 'HCL' no es reconocido por la librería de listings.
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\lstset{
+    language=bash, % Usamos 'bash' como alternativa visible
+    basicstyle=\small\ttfamily,
+    numbers=left,
+    numberstyle=\tiny\color{codegray},
+    stepnumber=1,
+    numbersep=5pt,
+    backgroundcolor=\color{white},
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    frame=single,
+    rulecolor=\color{black!10},
+    tabsize=2,
+    breaklines=true,
+    breakatwhitespace=false,
+    escapeinside={(*}{*)},
+    commentstyle=\color{green!40!black},
+    keywordstyle=\color{blue!80},
+    stringstyle=\color{red!70!black},
+}
+
+\pagestyle{fancy}
+\fancyhead[L]{Práctica Terraform y AWS}
+\fancyhead[R]{Claudia Arrate Esteve}
+\fancyfoot[C]{\thepage}
+
+\title{Práctica final de Terraform y AWS}
+\author{Claudia Arrate Esteve}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{fancy}
+
+\begin{abstract}
+En el siguiente documento se muestra paso por paso como se han realizado los dos ejercicios correspondientes a la Práctica final de Terraform y AWS del \textit{II Talent Campus en Automatización  + IA } de la empresa \textit{PSS} impartido por Joel Rosental. Dicha práctica se divide en un \textbf{Parte II} y una \textbf{Parte III}.
+
+\end{abstract}
+\section{Parte II}
+El siguiente apartado presenta los pasos de ejecución implementados para el despliegue de un sitio web estático sobre la infraestructura de Amazon Web Services (AWS) S3. El objetivo principal fue establecer una solución de hosting robusta y completamente automatizada. 
+Para ello se usarán cinco pilares fundamentales: la creación del bucket, la gestión de permisos públicos, la aplicación de políticas de acceso, la configuración del hosting estático y la carga de los objetos. 
+
+\subsection{Aprovisionamiento de Infraestructura con Terraform}
+Antes de empezar a crear el bucket se crearan manualmente los archivos \textit{index.html} y \textit{error.html} que se piden en los pasos 2 y 3. Estos archivos contienen un pequeño texto para indicarlo. El primero avisa de que estás en Terraform y el segundo muestra que la página no ha sido encontrada. Como último prerrequisito añadiremos el documento \textit{provider.tf}.
+
+\subsubsection{Creación y Configuración del Bucket S3}
+
+Como primer paso (pasos 1 y 4 de la hoja de enunciado) se crea el recurso principal, el bucket S3, el cual debe poseer un nombre único a nivel global. Adicionalmente, y de manera crítica para la exposición pública del sitio, se activan explícitamente todas las reglas dentro del \texttt{Public Access Block} de AWS, conforme a la normativa de acceso. El código que se muestra a continuación irá en el archivo \textit{main.tf}.
+
+\begin{lstlisting}[caption=Creación del Bucket y Desactivación del Bloqueo Público]
+# 1. Creacion del Bucket S3
+resource "aws_s3_bucket" "mi_bucket_ejemplo" {
+  bucket = "claudia-ae-pss" #los nombres de buckets no aceptan mayusculas 
+
+  tags = {
+    Name        = "MiBucketDesdeTerraform"
+    Environment = "Dev"
+  }
+}
+
+# 2. Activacion del Public Access Block (Punto 4)
+resource "aws_s3_bucket_public_access_block" "public_access_block" {
+  bucket = aws_s3_bucket.website_bucket.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+# Habilita el control de versiones (para poder recuperar objetos eliminados/modificados)
+resource "aws_s3_bucket_versioning" "versioning_config" {
+  bucket = aws_s3_bucket.mi_bucket_ejemplo.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+\end{lstlisting}
+
+\subsubsection{Gestión de Políticas de Acceso (Punto 5)}
+
+Para garantizar la accesibilidad al contenido web por parte de cualquier usuario a través de Internet, se implementa una \texttt{aws\_s3\_bucket\_policy}. Esta política otorga el permiso \texttt{s3:GetObject} (lectura) a todos los objetos dentro del bucket. El siguiente código se añadirá al archivo \textit{main.tf}
+
+\begin{lstlisting}[caption=Política de Bucket para Acceso Público de Lectura]
+data "aws_iam_policy_document" "website_policy" {
+  statement {
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+    actions = ["s3:GetObject"]
+    resources = [
+      aws_s3_bucket.website_bucket.arn,
+      "${aws_s3_bucket.website_bucket.arn}/*",
+    ]
+  }
+}
+#Aplicar la politica al bucket
+resource "aws_s3_bucket_policy" "website_policy" {
+  bucket     = aws_s3_bucket.website_bucket.id
+  depends_on = [aws_s3_bucket_public_access_block.public_access_block]
+  policy     = data.aws_iam_policy_document.website_policy.json
+}
+\end{lstlisting}
+
+Además para que esto funcione es necesario realizar los siguientes cambios el el código que se tenía anteriormente.
+\begin{lstlisting}[caption=Modificación de código]
+# 2. Activacion del Public Access Block
+resource "aws_s3_bucket_public_access_block" "public_access_block" {
+  bucket = aws_s3_bucket.mi_bucket_ejemplo.id
+  block_public_acls       = true
+  block_public_policy     = false #<--
+  ignore_public_acls      = true
+  restrict_public_buckets = false #<--
+}
+
+\end{lstlisting}
+
+\subsubsection{Configuración del Hosting Estático (Punto 6)}
+
+Se habilita la funcionalidad de sitio web estático de S3. Para ello se hace uso del recurso \texttt{aws\_s3\_bucket\_website\_configuration}, definiendo \texttt{index.html} y \texttt{error.html} como documentos de índice y error, respectivamente.
+
+\begin{lstlisting}[caption=Configuración del Hosting de Sitio Web Estático]
+resource "aws_s3_bucket_website_configuration" "website_config" {
+  bucket = aws_s3_bucket.mi_bucket_ejemplo.id
+  index_document {
+    suffix = "index.html"
+  }
+  error_document {
+    key = "error.html"
+  }
+}
+\end{lstlisting}
+
+Además hay que crear el archivo \textit{outputs.tf} con el siguiente contenido (punto 7).
+
+\begin{lstlisting}
+#Parte 7
+output "website_endpoint" {
+  description = "El endpoint público del sitio web estático S3."
+  value       = aws_s3_bucket_website_configuration.website_config.website_endpoint 
+}
+
+output "website_url" {
+  description = "La URL completa del sitio web estático S3 (usando la región)."
+  value       = aws_s3_bucket.mi_bucket_ejemplo.website_endpoint
+}
+\end{lstlisting}
+\subsection{Gestión del Contenido y Pruebas}
+
+\subsubsection{Carga de Archivos Mediante Terraform (Punto 8)}
+
+Inicialmente, se realizó una carga manual de los archivos \texttt{index.html} y \texttt{error.html} para la verificación funcional. Ahoras se procede a la eliminación de los archivos manuales y a la utilización del recurso \texttt{aws\_s3\_object} para la carga programática.
+
+\begin{lstlisting}[caption=Carga de Objetos de Contenido al Bucket]
+# Carga de index.html
+resource "aws_s3_object" "index" {
+  bucket       = aws_s3_bucket.mi_bucket_ejemplo.id
+  key          = "index.html"
+  source       = "index.html" (* (Archivo local) *)
+  content_type = "text/html"
+  etag         = filemd5("index.html") #para mantener cambios locales
+}
+
+# Carga de error.html
+resource "aws_s3_object" "error" {
+  bucket       = aws_s3_bucket.mi_bucket_ejemplo.id
+  key          = "error.html"
+  source       = "error.html" 
+  content_type = "text/html"
+  etag         = filemd5("error.html") #para mantener cambios locales
+}
+\end{lstlisting}
+
+\subsubsection{Depurado de código (parte 9)}
+Para que el código sea más legible se añaden \textit{tags} a los recursos para identificar de forma sencilla que se está haciendo en cada parte. Por ejemplo en la parte 8 añadimos a los recursos respectivamente:
+\begin{lstlisting}
+  tags = {
+    Project     = "StaticWebsite"
+    ManagedBy   = "Terraform"
+    ContentRole = "FilePage"
+  }
+
+  tags = {
+    Project     = "StaticWebsite"
+    ManagedBy   = "Terraform"
+    ContentRole = "ErrorPage"
+  }
+\end{lstlisting}
+\subsection{Resultado Final}
+Una vez realizados todos los pasos la carpeta de la práctica debería tener:
+
+\begin{figure} [h]
+    \centering
+    \includegraphics[width=0.2\linewidth]{estadofinaldelacarpeta.png}
+    \caption{Estado final de la carpeta}
+    \label{fig:placeholder}
+\end{figure}
+
+\subsection{Eliminación de recursos (Punto 10)}
+
+Finalmente, para cumplir con el requisito de gestión de costos, se recomienda la ejecución de la función \texttt{terraform destroy} al concluir las pruebas, garantizando la eliminación de todos los recursos aprovisionados.
+
+
+
+\end{document}

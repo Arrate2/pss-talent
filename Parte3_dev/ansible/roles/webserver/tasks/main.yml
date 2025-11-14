@@ -1,0 +1,43 @@
+- name: 1. Instalar paquetes requeridos (Apache, PHP, dependencias)
+  ansible.builtin.apt:
+    name: ['apache2', 'php', 'php-mysql', 'libapache2-mod-php']
+    state: present
+    update_cache: yes
+
+- name: 2. Descargar e instalar WordPress
+  ansible.builtin.unarchive:
+    src: https://wordpress.org/latest.tar.gz
+    dest: /tmp/
+    remote_src: yes
+
+- name: 2. Mover WordPress a la carpeta webroot
+  ansible.builtin.copy:
+    src: /tmp/wordpress/
+    dest: /var/www/html/
+    remote_src: yes
+
+- name: 3. Obtener la IP del servidor de base de datos
+  ansible.builtin.set_fact:
+    db_host: "{{ hostvars[groups['tag_role_db'][0]]['ansible_host'] }}"
+
+- name: 3. Configurar wp-config.php con la plantilla
+  ansible.builtin.template:
+    src: wp-config.php.j2 # Referencia a la plantilla en el directorio 'templates/'
+    dest: /var/www/html/wp-config.php
+    owner: www-data
+    group: www-data
+    mode: '0644'
+
+- name: 3. Establecer permisos correctos para WordPress
+  ansible.builtin.file:
+    path: /var/www/html
+    state: directory
+    recurse: yes
+    owner: www-data
+    group: www-data
+
+- name: 4. Asegurar que el servicio apache2 esté corriendo y habilitado al arranque
+  ansible.builtin.service:
+    name: apache2
+    state: started
+    enabled: yes

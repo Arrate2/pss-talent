@@ -1,0 +1,29 @@
+# 1. Instalar paquetes requeridos (MariaDB Server)
+- name: 1. Instalar paquetes requeridos (MariaDB Server)
+  ansible.builtin.apt:
+    name: ['mariadb-server', 'python3-pymysql'] 
+    state: present
+    update_cache: yes
+    
+# 3. Asegurar el servicio MariaDB
+- name: 3. Asegurar que el servicio mariadb esté corriendo y habilitado al arranque
+  ansible.builtin.service:
+    name: mariadb
+    state: started
+    enabled: yes
+
+# 2. Set up database and username
+- name: 2. Crear base de datos 'wordpress'
+  community.mysql.mysql_db:
+    name: wordpress
+    state: present
+    login_user: root
+    login_password: '' 
+
+- name: 2. Crear usuario 'parte3_wp_user' y otorgar permisos
+  community.mysql.mysql_user:
+    name: parte3_wp_user
+    password: parte3_wp_pass
+    priv: 'wordpress.*:ALL'
+    host: '%' # Permite conexiones desde cualquier host (esencial para el webserver)
+    state: present

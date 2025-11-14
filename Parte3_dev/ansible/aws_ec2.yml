@@ -1,0 +1,18 @@
+plugin: amazon.aws.aws_ec2
+regions:
+  - us-east-1
+
+filters:
+  instance-state-name: running
+
+keyed_groups:
+  # Crea los grupos dinámicos 'tag_role_web' y 'tag_role_db' a partir de la etiqueta 'role'
+  # Los playbooks apuntarán a estos grupos.
+  - key: tags.role
+    prefix: tag_role
+
+hostnames:
+  - public_ip_address
+
+compose:
+  ansible_host_: public_ip_address

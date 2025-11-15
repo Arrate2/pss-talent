@@ -1,0 +1,5 @@
+# Variables de la aplicación WordPress (deben ser consistentes con la plantilla wp-config.php)
+db_name: 'wordpress'
+db_user: 'parte3_wp_user'
+db_password: 'parte3_pass'
+db_root_password: 'AnsibleRoot123'

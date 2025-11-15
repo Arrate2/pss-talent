@@ -161,7 +161,7 @@ resource "aws_security_group" "sg_db" {
 resource "aws_instance" "webserver" {
   ami                         = data.aws_ami.ubuntu_latest.id
   instance_type               = var.instance_type
-  key_name                    = var.key_pair_name
+  key_name                    = aws_key_pair.wordpress_keypair.key_name
   subnet_id                   = aws_subnet.public_subnets[0].id # Subred 1
   vpc_security_group_ids      = [aws_security_group.sg_web.id]
   associate_public_ip_address = true
@@ -176,7 +176,7 @@ resource "aws_instance" "webserver" {
 resource "aws_instance" "dbserver" {
   ami                         = data.aws_ami.ubuntu_latest.id
   instance_type               = var.instance_type
-  key_name                    = var.key_pair_name
+  key_name                    = aws_key_pair.wordpress_keypair.key_name
   subnet_id                   = aws_subnet.public_subnets[1].id # Subred 2
   vpc_security_group_ids      = [aws_security_group.sg_db.id]
   associate_public_ip_address = true # Para simplificar el acceso de Ansible y la prueba

@@ -4,6 +4,7 @@
 TERRAFORM_DIR="terraform"
 ANSIBLE_INVENTORY="ansible/aws_ec2.yml"
 ANSIBLE_PLAYBOOK="ansible/site.yml"
+SSH_KEY_PATH="/home/vagrant/.ssh/parte3_wp_key.pem"
 export ANSIBLE_CONFIG="./ansible/ansible.cfg"
 
 echo "========================================================"
@@ -28,7 +29,7 @@ sleep 45
 # 2. Waits until the EC2 instances are created and available [cite: 50]
 echo -e "\n--- FASE 2: ESPERANDO CONEXIÓN SSH ---"
 # Espera activa hasta que ambas instancias sean accesibles vía SSH (usuario ubuntu)
-ansible all -i $ANSIBLE_INVENTORY -m wait_for_connection -e "ansible_user=ubuntu"
+ansible all -i $ANSIBLE_INVENTORY -m wait_for_connection -e "ansible_user=ubuntu" --private-key "$SSH_KEY_PATH"
 if [ $? -ne 0 ]; then
     echo "❌ ERROR: No se pudo establecer conexión SSH con las instancias. Verifique el Key Pair y los Security Groups."
     exit 1
@@ -44,7 +45,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # --- Finalización y Resultado ---
-WEB_IP=$(terraform output -raw -state=$TERRAFORM_DIR/terraform.tfstate webserver_public_ip)
+WEB_IP=$(terraform output -raw -state=$TERRAFORM_DIR/terraform.tfstate web_public_ip)
 
 echo -e "\n========================================================"
 echo "         ✅ DESPLIEGUE COMPLETO Y CONFIGURADO CON ÉXITO"

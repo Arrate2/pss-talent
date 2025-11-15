@@ -1,11 +1,11 @@
 - name: 1. Configurar Base de Datos
-  hosts: tag_role_db # Apunta al grupo dinámico del DB Server
+  hosts: role_db # Apunta al grupo dinámico del DB Server
   become: yes
   roles:
     - database
 
 - name: 2. Configurar Webserver y WordPress
-  hosts: tag_role_web # Apunta al grupo dinámico del Webserver
+  hosts: role_web # Apunta al grupo dinámico del Webserver
   become: yes
   roles:
     - webserver

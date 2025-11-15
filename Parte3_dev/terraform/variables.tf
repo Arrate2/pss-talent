@@ -22,8 +22,3 @@ variable "instance_type" {
   default     = "t3.micro" 
 }
 
-variable "key_pair_name" {
-  description = "El nombre de tu Key Pair SSH para las instancias EC2."
-  type        = string
-  default     = "mi_clave_parte3_wp_rsa" # <--- ¡REEMPLAZAR CON TU CLAVE REAL!
-}

@@ -18,11 +18,11 @@
 
 - name: 3. Obtener la IP del servidor de base de datos
   ansible.builtin.set_fact:
-    db_host: "{{ hostvars[groups['tag_role_db'][0]]['ansible_host'] }}"
+    db_host: "{{ hostvars[groups['role_db'][0]]['ansible_host'] }}"
 
 - name: 3. Configurar wp-config.php con la plantilla
   ansible.builtin.template:
-    src: wp-config.php.j2 # Referencia a la plantilla en el directorio 'templates/'
+    src: wp-config.php # Referencia a la plantilla en el directorio 'templates/'
     dest: /var/www/html/wp-config.php
     owner: www-data
     group: www-data

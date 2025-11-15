@@ -12,18 +12,28 @@
     state: started
     enabled: yes
 
-# 2. Set up database and username
-- name: 2. Crear base de datos 'wordpress'
+- name: 3b. Esperar a que el socket de MariaDB esté disponible
+  ansible.builtin.wait_for:
+    path: /var/run/mysqld/mysqld.sock # Espera a que el archivo del socket exista
+    state: present
+    delay: 5 # Espera 5 segundos antes de la primera comprobación
+    timeout: 60 # Máximo 60 segundos de espera
+  become: yes
+
+- name: 5. Crear base de datos wordpress
   community.mysql.mysql_db:
-    name: wordpress
+    name: "{{ db_name }}"
     state: present
     login_user: root
-    login_password: '' 
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  # Eliminar become/become_user, ya que se usa login_password.
 
-- name: 2. Crear usuario 'parte3_wp_user' y otorgar permisos
+- name: 6. Crear usuario y otorgar permisos
   community.mysql.mysql_user:
-    name: parte3_wp_user
-    password: parte3_wp_pass
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
     priv: 'wordpress.*:ALL'
-    host: '%' # Permite conexiones desde cualquier host (esencial para el webserver)
+    host: '%'
     state: present
+    login_user: root # <-- Usamos root como administrador
+    login_unix_socket: /var/run/mysqld/mysqld.sock

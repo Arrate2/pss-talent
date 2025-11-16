@@ -97,9 +97,10 @@ terraform destroy --auto-approve
 ```
 
 ## 📚 Mejoras posibles
-No están realizadas
+-   Validaciones post-deploy con Ansible (HTTP 200) (parte opcional)
+        Realizadas el domingo, para probar como se hace.
 
--   Validaciones post-deploy con Ansible (HTTP 200)
+No realizadas pero posibles:
 -   Pipeline CI/CD
 -   Monitoreo con CloudWatch o Prometheus
 -   Balanceador de carga y autoescalado

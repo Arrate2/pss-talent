@@ -1,4 +1,4 @@
-#!/bin/bash
+ansible-playbook -i $ANSIBLE_INVENTORY ansible/roles/webserver/tasks/main2.yml#!/bin/bash
 
 # --- Configuración y Variables ---
 TERRAFORM_DIR="terraform"
@@ -51,5 +51,20 @@ echo -e "\n========================================================"
 echo "         ✅ DESPLIEGUE COMPLETO Y CONFIGURADO CON ÉXITO"
 echo "========================================================"
 echo "URL de WordPress (Acceso Público): http://$WEB_IP"
-echo "¡El proceso completo se ejecutó con un solo comando!"
 echo "========================================================"
+echo ""
+echo ""
+echo "============================================================="
+echo "                  INICIANDO POST-DEPLOY                      "
+echo "============================================================="
+ansible-playbook -i $ANSIBLE_INVENTORY ansible/validation.yml
+
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: El playbook de Ansible falló durante el post-deployment."
+    exit 1
+fi
+
+echo "============================================================="
+echo "               VALIDACIÓN REALIZADA CON ÉXITO                "
+echo "    ¡El proceso completo se ejecutó con un solo comando!     "
+echo "============================================================="

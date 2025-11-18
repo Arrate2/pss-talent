@@ -2,15 +2,9 @@
 ---
 - name: |
     [PF] Despliegue de WordPress en Alta Disponibilidad (ASG + RDS)
-  
-  # Seleccionamos las instancias del ASG. 
-  # 'tag_role_web' es un filtro del inventario dinámico de AWS (aws_ec2.yml).
   hosts: role_web 
-  gather_facts: yes
-  become: yes
-  
-  # Variables críticas de la base de datos que se obtienen de los secretos
-  # (AWS_SECRET_ACCESS_KEY, AWS_ACCESS_KEY_ID, etc.) y la salida de Terraform (RDS_ENDPOINT).
+  gather_facts: true
+  become: true
   vars:
     # Variables del RDS PostgreSQL
     db_name: "{{ lookup('env', 'DB_NAME') }}"
@@ -18,15 +12,13 @@
     db_password: "{{ lookup('env', 'DB_PASSWORD') }}"
     db_host: "{{ lookup('env', 'RDS_ENDPOINT') }}" 
     db_port: "5432"
-    
   roles:
     # Solo necesitamos el rol webserver, ya que la base de datos es RDS.
     - webserver
-
 - name: Validar estado de la aplicación tras el despliegue
   hosts: role_web
-  gather_facts: no
-  become: no
+  gather_facts: false
+  become: false
   tasks:
     # 1a. Esperar a que el puerto HTTP (80) esté disponible
     - name: 1a. Esperar a que el puerto HTTP (80) esté disponible
@@ -37,8 +29,7 @@
         delay: 5
         timeout: 30
         state: started
-    
-    # 1b. Validar que WordPress responde con código HTTP 200
+     # 1b. Validar que WordPress responde con código HTTP 200
     - name: 1b. Validar que WordPress responde con código HTTP 200
       ansible.builtin.uri:
         url: "http://{{ ansible_host }}"
@@ -46,7 +37,6 @@
         status_code: 200
         timeout: 30
         register: http_check
-    
     - name: Notificar éxito de validación
       ansible.builtin.debug:
         msg: "✅ Validación POST-DEPLOY exitosa. WordPress responde correctamente (HTTP {{ http_check.status }})."

@@ -2,13 +2,13 @@
   ansible.builtin.apt:
     name: ['apache2', 'php', 'php-mysql', 'libapache2-mod-php', 'wget', 'unzip', 'php-pgsql', 'postgresql-client']
     state: present
-    update_cache: yes
+    update_cache: true
 
 - name: 2. Descargar e instalar WordPress
   ansible.builtin.unarchive:
     src: https://wordpress.org/latest.tar.gz
     dest: /tmp/
-    remote_src: yes
+    remote_src: true
 
 - name: 2b. Mover WordPress a la carpeta webroot
   ansible.builtin.copy:
@@ -28,7 +28,7 @@
   ansible.builtin.file:
     path: /var/www/html
     state: directory
-    recurse: yes
+    recurse: true
     owner: www-data
     group: www-data
 
@@ -36,4 +36,4 @@
   ansible.builtin.service:
     name: apache2
     state: started
-    enabled: yes
+    enabled: true

@@ -32,7 +32,7 @@ jobs:
       - name: Terraform Format Check
         id: fmt
         run: terraform fmt -check
-          working-directory: ./PracticaFinal/terraform
+        working-directory: ./PracticaFinal/terraform
       # --- Validación de Ansible ---
       - name: Instalar Ansible
         run: pip install ansible

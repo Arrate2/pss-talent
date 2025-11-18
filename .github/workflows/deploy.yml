@@ -8,9 +8,9 @@ env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   AWS_REGION: ${{ secrets.AWS_REGION }} # 'us-east-1' o la región que uses
-  DB_NAME: "wordpress" # Coincide con el default o el valor que uses en variables.tf
-  DB_USER: ${{ secrets.DB_USER }} # Secretos requeridos
-  DB_PASSWORD: ${{ secrets.DB_PASSWORD }} # Secretos requeridos
+  TF_VAR_db_name: "wordpress"
+  TF_VAR_db_user: ${{ secrets.DB_USER }}
+  TF_VAR_db_pass: ${{ secrets.DB_PASSWORD }}
   # Llave SSH Privada para Ansible (Requerida por el proveedor ec2 de Ansible)
   # EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
 jobs:

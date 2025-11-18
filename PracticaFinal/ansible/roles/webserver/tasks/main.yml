@@ -15,6 +15,9 @@
     src: /tmp/wordpress/
     dest: /var/www/html/
     remote_src: true
+    owner: www-data
+    group: www-data
+    mode: '0755'
 
 - name: 3. Configurar wp-config.php con la plantilla
   ansible.builtin.template:

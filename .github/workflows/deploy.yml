@@ -26,6 +26,9 @@ jobs:
   validation:
     runs-on: ubuntu-latest
     steps:
+      - name: Instalar Ansible y Ansible-Lint
+        run: pip install ansible ansible-lint
+        
       - name: Checkout del código
         uses: actions/checkout@v4
 
@@ -38,7 +41,7 @@ jobs:
       - name: Terraform Format Check
         id: fmt
         run: terraform fmt -check
-        working-directory: ./terraform
+        working-directory: ./PracticaFinal/terraform
       
       # --- Validación de Ansible ---
       - name: Instalar Ansible
@@ -46,7 +49,7 @@ jobs:
         
       - name: Ansible Lint (Validación de sintaxis del Playbook)
         run: ansible-lint -c .ansible-lint deploy.yml
-        working-directory: ./ansible # Ajusta si tu playbook está en otra ruta
+        working-directory: ./PracticaFinal/ansible # Ajusta si tu playbook está en otra ruta
 
   # =================================================================
   # 2. DESPLIEGUE DE INFRAESTRUCTURA (TERRAFORM)
@@ -76,25 +79,25 @@ jobs:
       - name: Terraform Init
         id: init
         run: terraform init
-        working-directory: ./terraform
+        working-directory: ./PracticaFinal/terraform
 
       - name: Terraform Plan
         id: plan
         run: terraform plan -var="db_name=${{ env.DB_NAME }}" -var="db_username=${{ env.DB_USER }}" -var="db_password=${{ env.DB_PASSWORD }}"
-        working-directory: ./terraform
+        working-directory: ./PracticaFinal/terraform
 
       - name: Terraform Apply
         id: apply
         # Ejecutar la aplicación, pasando los secretos de DB como variables
         run: terraform apply -auto-approve -var="db_name=${{ env.DB_NAME }}" -var="db_username=${{ env.DB_USER }}" -var="db_password=${{ env.DB_PASSWORD }}"
-        working-directory: ./terraform
+        working-directory: ./PracticaFinal/terraform
         
       - name: Get Terraform Outputs (RDS Endpoint)
         id: output
         run: |
           RDS_ENDPOINT=$(terraform output -raw rds_endpoint)
           echo "rds_endpoint=$RDS_ENDPOINT" >> $GITHUB_OUTPUT
-        working-directory: ./terraform
+        working-directory: ./PracticaFinal/terraform
 
   # =================================================================
   # 3. CONFIGURACIÓN DE APLICACIÓN (ANSIBLE)

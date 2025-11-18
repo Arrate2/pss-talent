@@ -6,8 +6,8 @@
   # Seleccionamos las instancias del ASG. 
   # 'tag_role_web' es un filtro del inventario dinámico de AWS (aws_ec2.yml).
   hosts: role_web 
-  gather_facts: yes
-  become: yes
+  gather_facts: true
+  become: true
   
   # Variables críticas de la base de datos que se obtienen de los secretos
   # (AWS_SECRET_ACCESS_KEY, AWS_ACCESS_KEY_ID, etc.) y la salida de Terraform (RDS_ENDPOINT).
@@ -25,8 +25,8 @@
 
 - name: Validar estado de la aplicación tras el despliegue
   hosts: role_web
-  gather_facts: no
-  become: no
+  gather_facts: false
+  become: false
   tasks:
     # 1a. Esperar a que el puerto HTTP (80) esté disponible
     - name: 1a. Esperar a que el puerto HTTP (80) esté disponible

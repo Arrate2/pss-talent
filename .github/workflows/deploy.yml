@@ -12,7 +12,7 @@ env:
   DB_USER: ${{ secrets.DB_USER }} # Secretos requeridos
   DB_PASSWORD: ${{ secrets.DB_PASSWORD }} # Secretos requeridos
   # Llave SSH Privada para Ansible (Requerida por el proveedor ec2 de Ansible)
-  EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+  # EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
 jobs:
   # =================================================================
   # 1. VALIDACIÓN (LINTING Y FORMATO)
@@ -32,7 +32,7 @@ jobs:
       - name: Terraform Format Check
         id: fmt
         run: terraform fmt -check
-        working-directory: ./PracticaFinal/terraform
+          working-directory: ./PracticaFinal/terraform
       # --- Validación de Ansible ---
       - name: Instalar Ansible
         run: pip install ansible

@@ -1,0 +1,111 @@
+# .github/workflows/deploy.yml
+name: PF | Despliegue de Infraestructura y Configuración (GitOps)
+
+on:
+  workflow_dispatch:
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  DB_NAME: "wordpress"
+  DB_USER: ${{ secrets.DB_USER }}
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+
+jobs:
+  validation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Instalar Ansible y Ansible-Lint
+        run: |
+          pip install ansible ansible-lint
+          ansible-galaxy collection install -r ./requirements.yml
+
+      - name: Terraform Format Check
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.x
+      - run: terraform fmt -check
+        working-directory: ./PracticaFinal/terraform
+
+      - name: Ansible Lint (Validación de sintaxis del Playbook)
+        run: ansible-lint -c .ansible-lint deploy.yml
+        working-directory: ./PracticaFinal/ansible
+
+  terraform_deploy:
+    needs: validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.x
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./PracticaFinal/terraform
+
+      - name: Terraform Plan
+        run: terraform plan -var="db_name=${{ env.DB_NAME }}" -var="db_username=${{ env.DB_USER }}" -var="db_password=${{ env.DB_PASSWORD }}"
+        working-directory: ./PracticaFinal/terraform
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var="db_name=${{ env.DB_NAME }}" -var="db_username=${{ env.DB_USER }}" -var="db_password=${{ env.DB_PASSWORD }}"
+        working-directory: ./PracticaFinal/terraform
+
+      - name: Get Terraform Outputs (RDS Endpoint)
+        id: output
+        run: |
+          RDS_ENDPOINT=$(terraform output -raw rds_endpoint)
+          echo "rds_endpoint=$RDS_ENDPOINT" >> $GITHUB_OUTPUT
+        working-directory: ./PracticaFinal/terraform
+
+  ansible_config:
+    needs: terraform_deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Setup Python and Install Ansible
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install Dependencies
+        run: pip install ansible boto3 botocore
+
+      - name: Guardar la llave SSH privada
+        run: |
+          echo "${{ env.EC2_SSH_PRIVATE_KEY }}" > ansible_ssh_key.pem
+          chmod 600 ansible_ssh_key.pem
+
+      - name: Wait for ASG instances to become ready
+        run: sleep 60
+
+      - name: Ejecutar Playbook de Ansible
+        env:
+          RDS_ENDPOINT: ${{ needs.terraform_deploy.outputs.rds_endpoint }}
+        run: |
+          ansible-playbook -i ansible/aws_ec2.yml \
+            --private-key ansible_ssh_key.pem \
+            -e "DB_NAME=${{ env.DB_NAME }}" \
+            -e "DB_USER=${{ env.DB_USER }}" \
+            -e "DB_PASSWORD=${{ env.DB_PASSWORD }}" \
+            ansible/deploy.yml
+        working-directory: ./PracticaFinal/ansible
+

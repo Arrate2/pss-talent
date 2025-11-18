@@ -12,7 +12,22 @@ data "aws_ami" "ubuntu_latest" {
     values = ["hvm"]
  }
 }
+ 
+resource "aws_key_pair" "wordpress_keypair" {
+  key_name   = "pf_keypair" # Nombre del key pair en la consola de AWS
+  # Carga el contenido de la CLAVE PÚBLICA que acabas de generar
+  public_key = file("~/.ssh/pf_keypair.pub")
+}
 
+resource "aws_launch_template" "wp_launch_template" {
+  name_prefix   = "wp-asg-lt"
+  # ...
+  # CRÍTICO: Referencia al Key Pair que acabamos de definir arriba
+  key_name      = aws_key_pair.wordpress_keypair.key_name
+
+  vpc_security_group_ids = [aws_security_group.sg_web.id]
+  # ...
+}
 # 1. Crear una VPC personalizada
 resource "aws_vpc" "custom_vpc" {
   cidr_block           = var.vpc_cidr

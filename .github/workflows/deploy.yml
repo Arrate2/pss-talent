@@ -66,13 +66,13 @@ jobs:
         working-directory: ./PracticaFinal/terraform
       - name: Terraform Plan
         id: plan
-        run: 'terraform plan -var="db_name=${{ env.DB_NAME }}" -var="db_username=${{ env.DB_USER }}" -var="db_password=${{ env.DB_PASSWORD }}"'
+        run: terraform plan
         working-directory: PracticaFinal/terraform
 
       - name: Terraform Apply
         id: apply
         # Ejecutar la aplicación, pasando los secretos de DB como variables
-        run: 'terraform apply -auto-approve -var="db_name=${{ env.DB_NAME }}" -var="db_username=${{ env.DB_USER }}" -var="db_password=${{ env.DB_PASSWORD }}"'
+        run: terraform apply
         working-directory: PracticaFinal/terraform
 
       - name: Get Terraform Outputs (RDS Endpoint)

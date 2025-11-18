@@ -26,6 +26,13 @@ jobs:
   validation:
     runs-on: ubuntu-latest
     steps:
+      - name: Instalar Ansible y Ansible-Lint
+        run: pip install ansible ansible-lint
+        
+      - name: Ansible Lint (Validación de sintaxis del Playbook)
+        run: ansible-lint -c .ansible-lint ./PrácticaFinal/ansible/deploy.yml
+        working-directory: ./PrácticaFinal/ansible
+        
       - name: Checkout del código
         uses: actions/checkout@v4
 

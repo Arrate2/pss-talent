@@ -60,11 +60,11 @@ jobs:
         working-directory: ./PracticaFinal/terraform
 
       - name: Terraform Plan
-        run: terraform plan -var="db_name=${{ env.DB_NAME }}" -var="db_user=${{ env.DB_USER }}" -var="db_pass=${{ env.DB_PASSWORD }}"
+        run: terraform plan -var="db_name=${{ env.DB_NAME }}"
         working-directory: ./PracticaFinal/terraform
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve -var="db_name=${{ env.DB_NAME }}" -var="db_user=${{ env.DB_USER }}" -var="db_pass=${{ env.DB_PASSWORD }}"
+        run: terraform apply -auto-approve -var="db_name=${{ env.DB_NAME }}" 
         working-directory: ./PracticaFinal/terraform
 
       - name: Get Terraform Outputs (RDS Endpoint)

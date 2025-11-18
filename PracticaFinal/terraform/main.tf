@@ -1,7 +1,3 @@
-provider "aws" {
-  region = var.aws_region
-}
-
 data "aws_ami" "ubuntu_latest" {
   most_recent = true
   owners      = ["099720109477"]
@@ -15,11 +11,6 @@ data "aws_ami" "ubuntu_latest" {
     name   = "virtualization-type"
     values = ["hvm"]
   }
-}
-
-resource "aws_key_pair" "wordpress_keypair" {
-  key_name   = "pf_keypair"
-  public_key = file("~/.ssh/pf_keypair.pub")
 }
 
 resource "aws_launch_template" "wp_launch_template" {

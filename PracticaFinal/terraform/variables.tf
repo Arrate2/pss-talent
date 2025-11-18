@@ -38,4 +38,4 @@ variable "db_pass" {
   description = "Password for the RDS PostgreSQL database."
   type        = string
   sensitive   = true
-
+}

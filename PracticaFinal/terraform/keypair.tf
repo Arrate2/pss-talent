@@ -11,6 +11,7 @@ resource "local_file" "private_key" {
   content         = tls_private_key.wordpress_key.private_key_pem
   filename        = "/home/vagrant/.ssh/parte3_wp_key.pem"
   file_permission = "0600"
+  directory_permission = "0755"
 }
 
 # Guardar la llave pública en AWS como Key Pair usando la variable

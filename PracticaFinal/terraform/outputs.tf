@@ -1,9 +1,10 @@
-output "web_public_ip" {
-  description = "La IP pública del servidor web (para acceder a WordPress)."
-  value       = aws_instance.webserver.public_ip
+output "alb_dns_name" {
+  description = "La DNS pública del Application Load Balancer"
+  value       = aws_lb.application_lb.dns_name
 }
 
-output "db_public_ip" {
-  description = "La IP pública del servidor de base de datos."
-  value       = aws_instance.dbserver.public_ip
+output "rds_endpoint" {
+  description = "El endpoint de la base de datos RDS PostgreSQL"
+  value       = aws_db_instance.rds_postgres.address
 }
+

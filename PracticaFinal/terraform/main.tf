@@ -14,11 +14,11 @@ data "aws_ami" "ubuntu_latest" {
 }
 
 resource "aws_launch_template" "wp_launch_template" {
-  name_prefix             = "wp-asg-lt"
-  image_id                = data.aws_ami.ubuntu_latest.id
-  instance_type           = var.instance_type
-  key_name                = aws_key_pair.wordpress_keypair.key_name
-  vpc_security_group_ids  = [aws_security_group.sg_web.id]
+  name_prefix            = "wp-asg-lt"
+  image_id               = data.aws_ami.ubuntu_latest.id
+  instance_type          = var.instance_type
+  key_name               = aws_key_pair.wordpress_keypair.key_name
+  vpc_security_group_ids = [aws_security_group.sg_web.id]
 
   user_data = base64encode(<<EOF
 #!/bin/bash
@@ -277,17 +277,17 @@ resource "aws_lb_listener" "http_listener" {
 }
 
 resource "aws_db_instance" "rds_postgres" {
-  allocated_storage    = 20
-  storage_type         = "gp2"
-  engine               = "postgres"
-  engine_version       = "15.2"
-  instance_class       = "db.t3.small"
-  db_name              = var.db_name
-  username             = var.db_user
-  password             = var.db_pass
+  allocated_storage = 20
+  storage_type      = "gp2"
+  engine            = "postgres"
+  engine_version    = "15.2"
+  instance_class    = "db.t3.small"
+  db_name           = var.db_name
+  username          = var.db_user
+  password          = var.db_pass
 
-  multi_az             = true
-  skip_final_snapshot  = true
+  multi_az            = true
+  skip_final_snapshot = true
 
   vpc_security_group_ids = [aws_security_group.sg_rds.id]
   db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name
@@ -299,12 +299,12 @@ resource "aws_db_instance" "rds_postgres" {
 }
 
 resource "aws_autoscaling_group" "wp_asg" {
-  name                 = "wp-asg"
-  min_size             = 2
-  max_size             = 4
-  desired_capacity     = 2
-  vpc_zone_identifier  = aws_subnet.public_subnets.*.id
-  target_group_arns    = [aws_lb_target_group.wp_tg.arn]
+  name                = "wp-asg"
+  min_size            = 2
+  max_size            = 4
+  desired_capacity    = 2
+  vpc_zone_identifier = aws_subnet.public_subnets.*.id
+  target_group_arns   = [aws_lb_target_group.wp_tg.arn]
 
   launch_template {
     id      = aws_launch_template.wp_launch_template.id
@@ -317,14 +317,3 @@ resource "aws_autoscaling_group" "wp_asg" {
     propagate_at_launch = true
   }
 }
-
-output "alb_dns_name" {
-  description = "The DNS name of the Application Load Balancer"
-  value       = aws_lb.application_lb.dns_name
-}
-
-output "rds_endpoint" {
-  description = "The RDS PostgreSQL endpoint for Ansible configuration"
-  value       = aws_db_instance.rds_postgres.address
-}
-

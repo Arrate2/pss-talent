@@ -8,9 +8,9 @@ resource "tls_private_key" "wordpress_key" {
 
 # Guardar la llave privada en un archivo local
 resource "local_file" "private_key" {
-  content         = tls_private_key.wordpress_key.private_key_pem
-  filename        = "/home/vagrant/.ssh/parte3_wp_key.pem"
-  file_permission = "0600"
+  content              = tls_private_key.wordpress_key.private_key_pem
+  filename             = "/home/vagrant/.ssh/parte3_wp_key.pem"
+  file_permission      = "0600"
   directory_permission = "0755"
 }
 

@@ -11,7 +11,6 @@ env:
   DB_NAME: "wordpress" # Coincide con el default o el valor que uses en variables.tf
   DB_USER: ${{ secrets.DB_USER }} # Secretos requeridos
   DB_PASSWORD: ${{ secrets.DB_PASSWORD }} # Secretos requeridos
-
   # Llave SSH Privada para Ansible (Requerida por el proveedor ec2 de Ansible)
   EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
 jobs:
@@ -67,13 +66,15 @@ jobs:
         working-directory: ./PracticaFinal/terraform
       - name: Terraform Plan
         id: plan
-        run: terraform plan -var="db_name=${{ env.DB_NAME }}" -var="db_username=${{ env.DB_USER }}" -var="db_password=${{ env.DB_PASSWORD }}"
-        working-directory: ./PracticaFinal/terraform
+        run: terraform plan -var= "db_name=${{ env.DB_NAME }}" -var= "db_username=${{ env.DB_USER }}" -var= "db_password=${{ env.DB_PASSWORD }}"
+        working-directory: PracticaFinal/terraform
+      
       - name: Terraform Apply
         id: apply
         # Ejecutar la aplicación, pasando los secretos de DB como variables
-        run: terraform apply -auto-approve -var="db_name=${{ env.DB_NAME }}" -var="db_username=${{ env.DB_USER }}" -var="db_password=${{ env.DB_PASSWORD }}"
-        working-directory: ./PracticaFinal/terraform
+        run: terraform apply -auto-approve -var= "db_name=${{ env.DB_NAME }}" -var= "db_username=${{ env.DB_USER }}" -var= "db_password=${{ env.DB_PASSWORD }}"
+        working-directory: PracticaFinal/terraform
+      
       - name: Get Terraform Outputs (RDS Endpoint)
         id: output
         run: |

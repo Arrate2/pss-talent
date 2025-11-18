@@ -1,0 +1,39 @@
+# 1. Instalar paquetes requeridos (MariaDB Server)
+- name: 1. Instalar paquetes requeridos (MariaDB Server)
+  ansible.builtin.apt:
+    name: ['mariadb-server', 'python3-pymysql'] 
+    state: present
+    update_cache: yes
+    
+# 3. Asegurar el servicio MariaDB
+- name: 3. Asegurar que el servicio mariadb esté corriendo y habilitado al arranque
+  ansible.builtin.service:
+    name: mariadb
+    state: started
+    enabled: yes
+
+- name: 3b. Esperar a que el socket de MariaDB esté disponible
+  ansible.builtin.wait_for:
+    path: /var/run/mysqld/mysqld.sock # Espera a que el archivo del socket exista
+    state: present
+    delay: 5 # Espera 5 segundos antes de la primera comprobación
+    timeout: 60 # Máximo 60 segundos de espera
+  become: yes
+
+- name: 5. Crear base de datos wordpress
+  community.mysql.mysql_db:
+    name: "{{ db_name }}"
+    state: present
+    login_user: root
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  # Eliminar become/become_user, ya que se usa login_password.
+
+- name: 6. Crear usuario y otorgar permisos
+  community.mysql.mysql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    priv: 'wordpress.*:ALL'
+    host: '%'
+    state: present
+    login_user: root # <-- Usamos root como administrador
+    login_unix_socket: /var/run/mysqld/mysqld.sock

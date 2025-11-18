@@ -3,14 +3,10 @@
 - name: |
     [PF] Despliegue de WordPress en Alta Disponibilidad (ASG + RDS)
   
-  # Seleccionamos las instancias del ASG. 
-  # 'tag_role_web' es un filtro del inventario dinámico de AWS (aws_ec2.yml).
   hosts: role_web 
   gather_facts: true
   become: true
   
-  # Variables críticas de la base de datos que se obtienen de los secretos
-  # (AWS_SECRET_ACCESS_KEY, AWS_ACCESS_KEY_ID, etc.) y la salida de Terraform (RDS_ENDPOINT).
   vars:
     # Variables del RDS PostgreSQL
     db_name: "{{ lookup('env', 'DB_NAME') }}"
@@ -20,7 +16,6 @@
     db_port: "5432"
     
   roles:
-    # Solo necesitamos el rol webserver, ya que la base de datos es RDS.
     - webserver
 
 - name: Validar estado de la aplicación tras el despliegue

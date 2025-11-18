@@ -8,8 +8,6 @@ env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   AWS_REGION: ${{ secrets.AWS_REGION }} # 'us-east-1' o la región que uses
-
-  # Credenciales de la Base de Datos (para Terraform y Ansible)
   DB_NAME: "wordpress" # Coincide con el default o el valor que uses en variables.tf
   DB_USER: ${{ secrets.DB_USER }} # Secretos requeridos
   DB_PASSWORD: ${{ secrets.DB_PASSWORD }} # Secretos requeridos

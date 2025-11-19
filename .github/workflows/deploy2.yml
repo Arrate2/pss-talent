@@ -56,6 +56,14 @@ jobs:
         with:
           terraform_version: 1.6.x
 
+      - name: ⚙️ Fix: Importar Key Pair existente (parte3_wp_key)
+        run: terraform import aws_key_pair.wordpress_keypair parte3_wp_key
+        working-directory: PracticaFinal/terraform
+
+      - name: ⚙️ Fix: Importar DB Subnet Group (rds-subnet-group)
+        run: terraform import aws_db_subnet_group.rds_subnet_group rds-subnet-group
+        working-directory: PracticaFinal/terraform
+      
       - name: Terraform Init
         run: terraform init
         working-directory: ./PracticaFinal/terraform

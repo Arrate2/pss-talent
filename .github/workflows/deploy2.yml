@@ -61,7 +61,7 @@ jobs:
         working-directory: ./PracticaFinal/terraform
 
       - name: Importar Key Pair existente (parte3_wp_key)
-        run: 'terraform import -var="db_user=${{ env.DB_USER }}" -var="db_pass=${{ env.DB_PASSWORD }}" aws_key_pair.wordpress_keypair parte3_wp_key || true'
+        run: 'terraform import -var="db_user=${{ env.DB_USER }}" -var="db_pass=${{ env.DB_PASSWORD }}" -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" aws_key_pair.wordpress_keypair parte3_wp_key || true'
         working-directory: PracticaFinal/terraform
 
       - name: Importar DB Subnet Group (rds-subnet-group)

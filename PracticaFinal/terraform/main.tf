@@ -27,7 +27,7 @@ apt install -y python3
 EOF
   )
   tag_specifications {
-    resurce_type = "instance"
+    resource_type = "instance"
     tags = {
       Name = "pf-web"
       Role = "web"

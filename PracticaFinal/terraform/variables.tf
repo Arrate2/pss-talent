@@ -39,3 +39,9 @@ variable "db_pass" {
   type        = string
   sensitive   = true
 }
+
+variable "wordpress_public_key" {
+  type        = string
+  description = "Public SSH key used for the WordPress EC2 instances."
+}
+

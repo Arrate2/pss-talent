@@ -28,7 +28,7 @@ EOF
   )
 
   tags = {
-    Name = "WP-ASG-Instance"
+    Name = "WP-Wordpress-ASG-Instance"
     Role = "web"
   }
 }

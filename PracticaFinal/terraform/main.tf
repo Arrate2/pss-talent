@@ -26,10 +26,11 @@ apt update
 apt install -y python3
 EOF
   )
-
-  tags = {
-    Name = "WP-Wordpress-ASG-Instance"
-    Role = "web"
+  tags_specifications {
+    resurce_type = "instance"
+    tags = {
+      Name = "pf-web"
+      Role = "web"
   }
 }
 
@@ -313,7 +314,7 @@ resource "aws_autoscaling_group" "wp_asg" {
 
   tag {
     key                 = "Name"
-    value               = "WP-Wordpress-Instance"
+    value               = "pf-web"
     propagate_at_launch = true
   }
 }

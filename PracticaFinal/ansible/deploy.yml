@@ -1,40 +1,9 @@
 ---
 - name: |
-    [PF] Despliegue de WordPress en Alta Disponibilidad (ASG + RDS)
+    [Configurar webserver]
   hosts: role_web
   gather_facts: true
   become: true
-  vars:
-    # Variables del RDS PostgreSQL
-    db_name: "{{ lookup('env', 'DB_NAME') }}"
-    db_user: "{{ lookup('env', 'DB_USER') }}"
-    db_password: "{{ lookup('env', 'DB_PASSWORD') }}"
-    db_host: "{{ lookup('env', 'RDS_ENDPOINT') }}"
-    db_port: "5432"
   roles:
     - webserver
-- name: Validar estado de la aplicación tras el despliegue
-  hosts: role_web
-  gather_facts: false
-  become: false
-  tasks:
-    # 1a. Esperar a que el puerto HTTP (80) esté disponible
-    - name: 1a. Esperar a que el puerto HTTP (80) esté disponible
-      ansible.builtin.wait_for:
-        port: 80
-        # Usamos la IP de la propia instancia (localhost)
-        host: "{{ ansible_host }}"
-        delay: 5
-        timeout: 30
-        state: started
-    # 1b. Validar que WordPress responde con código HTTP 200
-    - name: 1b. Validar que WordPress responde con código HTTP 200
-      ansible.builtin.uri:
-        url: "http://{{ ansible_host }}"
-        method: GET
-        status_code: 200
-        timeout: 30
-        register: http_check
-    - name: Notificar éxito de validación
-      ansible.builtin.debug:
-        msg: "✅ Validación POST-DEPLOY exitosa. WordPress responde correctamente (HTTP {{ http_check.status }})."
+

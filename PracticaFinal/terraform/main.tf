@@ -314,7 +314,6 @@ resource "aws_autoscaling_group" "wp_asg" {
   tag {
     key                 = "Name"
     value               = "WP-Wordpress-Instance"
-    role                = "web"
     propagate_at_launch = true
   }
 }

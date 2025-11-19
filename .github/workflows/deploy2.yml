@@ -10,7 +10,7 @@ env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   DB_NAME: "wordpress"
   VAR_db_user: ${{ secrets.DB_USER }}
-  VAR_db_pass: ${{ secrets.DB_PASSWORD }}
+  VAR_db_pass: ${{ secrets.DB_PASS }}
   EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
   EC2_SSH_PUBLIC_KEY: ${{ secrets.EC2_SSH_PUBLIC_KEY }}
 
@@ -61,21 +61,21 @@ jobs:
         working-directory: ./PracticaFinal/terraform
 
       - name: Importar Key Pair existente (parte3_wp_key)
-        run: 'terraform import -var="db_user=${{ env.DB_USER }}" -var="db_pass=${{ env.DB_PASSWORD }}" -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" aws_key_pair.wordpress_keypair parte3_wp_key || true'
+        run: 'terraform import -var="db_user=${{ env.DB_USER }}" -var="db_pass=${{ env.DB_PASS }}" -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" aws_key_pair.wordpress_keypair parte3_wp_key || true'
         working-directory: PracticaFinal/terraform
 
       - name: Importar DB Subnet Group (rds-subnet-group)
-        run: 'terraform import -var="db_user=${{ env.DB_USER }}" -var="db_pass=${{ env.DB_PASSWORD }}" -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" aws_db_subnet_group.rds_subnet_group rds-subnet-group || true'
+        run: 'terraform import -var="db_user=${{ env.DB_USER }}" -var="db_pass=${{ env.DB_PASS }}" -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" aws_db_subnet_group.rds_subnet_group rds-subnet-group || true'
         working-directory: PracticaFinal/terraform
 
       - name: Terraform Plan
         id: plan
-        run: 'terraform plan -var="db_name=${{ env.DB_NAME }}" -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" -var="db_user=${{ env.DB_USER }}" -var="db_pass=${{ env.DB_PASSWORD }}"'
+        run: 'terraform plan -var="db_name=${{ env.DB_NAME }}" -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" -var="db_user=${{ env.DB_USER }}" -var="db_pass=${{ env.DB_PASSW }}"'
         working-directory: PracticaFinal/terraform
 
       - name: Terraform Apply
         id: apply
-        run: 'terraform apply -auto-approve -var="db_name=${{ env.DB_NAME }}" -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" -var="db_user=${{ env.DB_USER }}" -var="db_pass=${{ env.DB_PASSWORD }}"'
+        run: 'terraform apply -auto-approve -var="db_name=${{ env.DB_NAME }}" -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" -var="db_user=${{ env.DB_USER }}" -var="db_pass=${{ env.DB_PASS }}"'
         working-directory: PracticaFinal/terraform
       - name: Get Terraform Outputs (RDS Endpoint)
         id: output
@@ -115,7 +115,7 @@ jobs:
             --private-key ansible_ssh_key.pem \
             -e "DB_NAME=${{ env.DB_NAME }}" \
             -e "DB_USER=${{ env.DB_USER }}" \
-            -e "DB_PASSWORD=${{ env.DB_PASSWORD }}" \
+            -e "DB_PASSWORD=${{ env.DB_PASS }}" \
             ansible/deploy.yml
         working-directory: ./PracticaFinal/ansible
 

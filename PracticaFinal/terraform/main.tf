@@ -318,4 +318,9 @@ resource "aws_autoscaling_group" "wp_asg" {
     value               = "pf-web"
     propagate_at_launch = true
   }
+  tag {
+    key = "Role"
+    value = "web"
+    propagate_at_launch = true
+  }
 }

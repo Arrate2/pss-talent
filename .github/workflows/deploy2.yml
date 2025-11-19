@@ -9,8 +9,8 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   AWS_REGION: ${{ secrets.AWS_REGION }}
   DB_NAME: "wordpress"
-  VAR_db_user: ${{ secrets.DB_USER }}
-  VAR_db_pass: ${{ secrets.DB_PASS }}
+  VAR_DB_USER: ${{ secrets.DB_USER }}
+  VAR_DB_PASS: ${{ secrets.DB_PASS }}
   EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
   EC2_SSH_PUBLIC_KEY: ${{ secrets.EC2_SSH_PUBLIC_KEY }}
 
@@ -70,12 +70,12 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: 'terraform plan -var="db_name=${{ env.DB_NAME }}" -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" -var="db_user=${{ env.DB_USER }}" -var="db_pass=${{ env.DB_PASSW }}"'
+        run: 'terraform plan -var="db_name=${{ env.DB_NAME }}" -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" -var="db_user=${{ env.VAR_DB_USER }}" -var="db_pass=${{ env.VAR_DB_PASS }}"'
         working-directory: PracticaFinal/terraform
 
       - name: Terraform Apply
         id: apply
-        run: 'terraform apply -auto-approve -var="db_name=${{ env.DB_NAME }}" -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" -var="db_user=${{ env.DB_USER }}" -var="db_pass=${{ env.DB_PASS }}"'
+        run: 'terraform apply -auto-approve -var="db_name=${{ env.DB_NAME }}" -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" -var="db_user=${{ env.VAR_DB_USER }}" -var="db_pass=${{ env.VAR_DB_PASS }}"'
         working-directory: PracticaFinal/terraform
       - name: Get Terraform Outputs (RDS Endpoint)
         id: output

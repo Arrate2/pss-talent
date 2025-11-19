@@ -55,6 +55,10 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.x
+ 
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./PracticaFinal/terraform
 
       - name: Importar Key Pair existente (parte3_wp_key)
         run: terraform import aws_key_pair.wordpress_keypair parte3_wp_key
@@ -63,11 +67,7 @@ jobs:
       - name: Importar DB Subnet Group (rds-subnet-group)
         run: terraform import aws_db_subnet_group.rds_subnet_group rds-subnet-group
         working-directory: PracticaFinal/terraform
-      
-      - name: Terraform Init
-        run: terraform init
-        working-directory: ./PracticaFinal/terraform
-      
+
       - name: Terraform Plan
         id: plan
         run: 'terraform plan -var="db_name=${{ env.DB_NAME }}" -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" -var="db_user=${{ env.DB_USER }}" -var="db_pass=${{ env.DB_PASSWORD }}"'

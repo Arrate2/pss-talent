@@ -26,7 +26,7 @@ apt update
 apt install -y python3
 EOF
   )
-  tags_specifications {
+  tag_specifications {
     resurce_type = "instance"
     tags = {
       Name = "pf-web"

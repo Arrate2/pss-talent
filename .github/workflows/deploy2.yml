@@ -65,7 +65,7 @@ jobs:
         working-directory: PracticaFinal/terraform
 
       - name: Importar DB Subnet Group (rds-subnet-group)
-        run: 'terraform import -var="db_user=${{ env.DB_USER }}" -var="db_pass=${{ env.DB_PASSWORD }}" aws_db_subnet_group.rds_subnet_group rds-subnet-group || true'
+        run: 'terraform import -var="db_user=${{ env.DB_USER }}" -var="db_pass=${{ env.DB_PASSWORD }}" -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" aws_db_subnet_group.rds_subnet_group rds-subnet-group || true'
         working-directory: PracticaFinal/terraform
 
       - name: Terraform Plan

@@ -4,6 +4,10 @@
     state: present
     update_cache: true
 
+- name: Configurar ansible_python_interpreter para usar python3.9
+      ansible.builtin.set_fact:
+        ansible_python_interpreter: /usr/bin/python3.9
+
 - name: 4. Asegurar que el servicio apache2 esté corriendo y habilitado al arranque
   ansible.builtin.service:
     name: apache2

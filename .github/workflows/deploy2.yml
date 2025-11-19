@@ -103,7 +103,7 @@ jobs:
         run: |
           echo "${{ env.EC2_SSH_PRIVATE_KEY }}" > ansible_ssh_key.pem
           chmod 600 ansible_ssh_key.pem
-
+        working-directory: ./PracticaFinal/ansible
       - name: Wait for ASG instances to become ready
         run: sleep 60
 
@@ -112,7 +112,7 @@ jobs:
           RDS_ENDPOINT: ${{ needs.terraform_deploy.outputs.rds_endpoint }}
         run: |
           ansible-playbook -i aws_ec2.yml \
-            --private-key pf_keypair \
+            --private-key ansible_ssh_key.pem \
             -e "DB_NAME=${{ env.DB_NAME }}" \
             -e "DB_USER=${{ env.DB_USER }}" \
             -e "DB_PASSD=${{ env.DB_PASS }}" \

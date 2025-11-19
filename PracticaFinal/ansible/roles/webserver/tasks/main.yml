@@ -1,6 +1,6 @@
 - name: 1. Instalar paquetes requeridos (Apache, PHP, dependencias)
   ansible.builtin.apt:
-    name: ['apache2', 'php', 'php-mysql', 'libapache2-mod-php', 'wget', 'unzip', 'php-pgsql', 'postgresql-client']
+    name: ['apache2', 'php', 'php-mysql', 'libapache2-mod-php', 'wget', 'unzip', 'php-pgsql', 'postgresql-client', 'python3.9', 'python3-pip']
     state: present
     update_cache: true
 

@@ -31,7 +31,7 @@ EOF
     tags = {
       Name = "pf-web"
       Role = "web"
-   } 
+    }
   }
 }
 

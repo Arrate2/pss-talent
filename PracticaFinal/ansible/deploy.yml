@@ -2,7 +2,7 @@
 - name: |
     [Configurar webserver]
   hosts: role_web
-  gather_facts: false
+  gather_facts: true
   become: true
   roles:
     - webserver

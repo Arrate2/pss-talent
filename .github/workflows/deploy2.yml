@@ -23,6 +23,7 @@ jobs:
       - name: Instalar Ansible
         run: |
           ansible-galaxy collection install -r ./requirements.yml
+          pip install ansible boto3 btocore
 
       - name: Terraform Format Check
         uses: hashicorp/setup-terraform@v3

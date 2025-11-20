@@ -10,6 +10,8 @@ env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
   EC2_SSH_PUBLIC_KEY: ${{ secrets.EC2_SSH_PUBLIC_KEY }}
+  DB_USER: ${{ secrets.DB_USER }} 
+  DB_PASS: ${{ secrets.DB_PASS }}
 
 jobs:
   validation:
@@ -52,12 +54,12 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan
+        run: 'terraform plan -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" -var="db_user=${{ secrets.DB_USER }}" -var="db_pass=${{ secrets.DB_PASS }}"'
         working-directory: PracticaFinal/terraform
 
       - name: Terraform Apply
         id: apply
-        run: 'terraform apply -auto-approve -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }} "'
+        run: 'terraform apply -auto-approve -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }} " -var="db_user=${{ secrets.DB_USER }}" -var="db_pass=${{ secrets.DB_PASS }}"'
         working-directory: PracticaFinal/terraform
 
       - name: Get Terraform Outputs (RDS Endpoint)

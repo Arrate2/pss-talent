@@ -33,7 +33,8 @@ jobs:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-  terraform_deploy:
+  
+terraform_deploy:
     needs: validation
     runs-on: ubuntu-latest
     steps:
@@ -60,7 +61,7 @@ jobs:
         working-directory: PracticaFinal/terraform
 
       - name: Get Terraform Outputs (RDS Endpoint)
-        id: output
+      id: output
         run: |
           RDS_ENDPOINT=$(terraform output -raw rds_endpoint)
           echo "rds_endpoint=$RDS_ENDPOINT" >> $GITHUB_OUTPUT

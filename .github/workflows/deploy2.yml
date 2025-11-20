@@ -37,6 +37,7 @@ jobs:
   terraform_deploy:
     needs: validation
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout del código
         uses: actions/checkout@v4

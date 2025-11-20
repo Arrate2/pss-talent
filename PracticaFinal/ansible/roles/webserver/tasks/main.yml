@@ -6,9 +6,12 @@
 
 - name: 2. Asegurar que el servicio apache2 esté corriendo y habilitado al arranque
   ansible.builtin.service:
-    name: ['apache2', 'nginx']
+    name: "{{ item }}"
     state: started
-    enabled: true
+    enabled: yes
+  loop:
+    - apache2
+    - nginx
 - name: 3. Crea un test web
   ansible.builtin.copy:
     dest: /var/www/html/index.html

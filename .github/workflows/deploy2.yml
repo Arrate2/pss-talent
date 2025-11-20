@@ -60,14 +60,6 @@ jobs:
         run: terraform init
         working-directory: ./PracticaFinal/terraform
 
-      - name: Importar Key Pair existente (parte3_wp_key)
-        run: 'terraform import -var="db_user=${{ env.DB_USER }}" -var="db_pass=${{ env.DB_PASS }}" -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" aws_key_pair.wordpress_keypair parte3_wp_key || true'
-        working-directory: PracticaFinal/terraform
-
-      - name: Importar DB Subnet Group (rds-subnet-group)
-        run: 'terraform import -var="db_user=${{ env.DB_USER }}" -var="db_pass=${{ env.DB_PASS }}" -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" aws_db_subnet_group.rds_subnet_group rds-subnet-group || true'
-        working-directory: PracticaFinal/terraform
-
       - name: Terraform Plan
         id: plan
         run: 'terraform plan -var="db_name=${{ env.DB_NAME }}" -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" -var="db_user=${{ env.VAR_DB_USER }}" -var="db_pass=${{ env.VAR_DB_PASS }}"'
@@ -113,9 +105,6 @@ jobs:
         run: |
           ansible-playbook -i aws_ec2.yml \
             --private-key ansible_ssh_key.pem \
-            -e "DB_NAME=${{ env.DB_NAME }}" \
-            -e "DB_USER=${{ env.DB_USER }}" \
-            -e "DB_PASSD=${{ env.DB_PASS }}" \
             deploy.yml
         working-directory: ./PracticaFinal/ansible
 

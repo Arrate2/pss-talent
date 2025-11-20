@@ -5,6 +5,6 @@ output "alb_dns_name" {
 
 output "rds_endpoint" {
   description = "El endpoint de la base de datos RDS PostgreSQL"
-  value       = aws_db_instance.rds_postgres.address
+  value       = aws_db_instance.rds_postgres.endpoint
 }
 

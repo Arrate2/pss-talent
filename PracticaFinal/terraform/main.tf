@@ -1,47 +1,10 @@
-data "aws_ami" "ubuntu_latest" {
-  most_recent = true
-  owners      = ["099720109477"]
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-}
-
-resource "aws_launch_template" "wp_launch_template" {
-  name_prefix            = "wp-asg-lt"
-  image_id               = data.aws_ami.ubuntu_latest.id
-  instance_type          = var.instance_type
-  key_name               = aws_key_pair.wordpress_keypair.key_name
-  vpc_security_group_ids = [aws_security_group.sg_web.id]
-
-  user_data = base64encode(<<EOF
-#!/bin/bash
-apt update
-apt install -y python3
-EOF
-  )
-  tag_specifications {
-    resource_type = "instance"
-    tags = {
-      Name = "pf-web"
-      Role = "web"
-    }
-  }
-}
-
 resource "aws_vpc" "custom_vpc" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = {
-    Name = "PF-VPC"
+    Name = "PF-Claudia-VPC"
   }
 }
 
@@ -49,10 +12,11 @@ resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.custom_vpc.id
 
   tags = {
-    Name = "PF-IGW"
+    Name = "PF-Claudia-IGW"
   }
 }
 
+#subredes publicas
 resource "aws_subnet" "public_subnets" {
   count                   = length(var.public_subnet_cidrs)
   vpc_id                  = aws_vpc.custom_vpc.id
@@ -61,7 +25,7 @@ resource "aws_subnet" "public_subnets" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "PF-Public-Subnet-${count.index + 1}"
+    Name = "PF-Claudia-Public-Subnet-${count.index + 1}"
   }
 }
 
@@ -69,6 +33,7 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
+#subredes privadas
 resource "aws_subnet" "private" {
   count             = 2
   vpc_id            = aws_vpc.custom_vpc.id
@@ -76,20 +41,32 @@ resource "aws_subnet" "private" {
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = {
-    Name = "Private-Subnet-${count.index + 1}"
+    Name = "PF-Claudia-Private-Subnet-${count.index + 1}"
     Tier = "Private"
   }
 }
 
-resource "aws_db_subnet_group" "rds_subnet_group" {
-  name       = "rds-subnet-group"
-  subnet_ids = aws_subnet.private.*.id
+#tabla de enrutamiento publica
+resource "aws_route_table" "public_rt" {
+  vpc_id = aws_vpc.custom_vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
+  }
 
   tags = {
-    Name = "RDS Subnet Group"
+    Name = "PF-Claudia-Public-Route-Table"
   }
 }
 
+resource "aws_route_table_association" "public" {
+  count          = length(aws_subnet.public_subnets)
+  subnet_id      = aws_subnet.public_subnets[count.index].id
+  route_table_id = aws_route_table.public_rt.id
+}
+
+#NAT Gatevay
 resource "aws_eip" "nat_eip" {
   vpc = true
 }
@@ -104,30 +81,12 @@ resource "aws_nat_gateway" "nat" {
   depends_on = [aws_internet_gateway.igw]
 }
 
-resource "aws_route_table" "public_rt" {
-  vpc_id = aws_vpc.custom_vpc.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.igw.id
-  }
-
-  tags = {
-    Name = "PF-Public-Route-Table"
-  }
-}
-
-resource "aws_route_table_association" "public" {
-  count          = length(aws_subnet.public_subnets)
-  subnet_id      = aws_subnet.public_subnets[count.index].id
-  route_table_id = aws_route_table.public_rt.id
-}
-
+#tabla de enrutamiento privada
 resource "aws_route_table" "private_rt" {
   vpc_id = aws_vpc.custom_vpc.id
 
   tags = {
-    Name = "Private-Route-Table"
+    Name = "PF-Claudia-Private-Route-Table"
   }
 }
 
@@ -143,8 +102,19 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.private_rt.id
 }
 
+#RDS
+resource "aws_db_subnet_group" "rds_subnet_group" {
+  name       = "rds-subnet-group"
+  subnet_ids = aws_subnet.private.*.id
+
+  tags = {
+    Name = "PF-Claudia-RDS Subnet Group"
+  }
+}
+
+#Grupos de seguridad ALB 
 resource "aws_security_group" "sg_alb" {
-  name        = "pf-alb-sg"
+  name        = "pf-claudia-alb-sg"
   description = "Allow HTTP and HTTPS inbound traffic from internet"
   vpc_id      = aws_vpc.custom_vpc.id
 
@@ -172,10 +142,11 @@ resource "aws_security_group" "sg_alb" {
   }
 
   tags = {
-    Name = "PF-SG-ALB"
+    Name = "PF-Claudia-SG-ALB"
   }
 }
 
+#EC2 solo trafico desde el balanceador y SSH
 resource "aws_security_group" "sg_web" {
   name        = "pf-web-sg"
   description = "Allow HTTP, HTTPS, SSH inbound traffic"
@@ -213,7 +184,7 @@ resource "aws_security_group" "sg_web" {
   }
 
   tags = {
-    Name = "PF-SG-Webserver"
+    Name = "PF-Claudia-SG-Webserver"
   }
 }
 
@@ -238,10 +209,11 @@ resource "aws_security_group" "sg_rds" {
   }
 
   tags = {
-    Name = "PF-SG-RDS"
+    Name = "PF-Claudia-SG-RDS"
   }
 }
 
+#LB
 resource "aws_lb" "application_lb" {
   name               = "wp-alb-gitops"
   internal           = false
@@ -250,7 +222,7 @@ resource "aws_lb" "application_lb" {
   subnets            = aws_subnet.public_subnets.*.id
 
   tags = {
-    Name = "WP-Application-Load-Balancer"
+    Name = "PF-Claudia-Application-Load-Balancer"
   }
 }
 
@@ -278,6 +250,51 @@ resource "aws_lb_listener" "http_listener" {
   }
 }
 
+
+#LAUNCH TEMPLATE
+resource "aws_launch_template" "wp_launch_template" {
+  name_prefix            = "wp-asg-lt"
+  image_id               = data.aws_ami.ubuntu_latest.id
+  instance_type          = var.instance_type
+  key_name               = aws_key_pair.wordpress_keypair.key_name
+  vpc_security_group_ids = [aws_security_group.sg_web.id]
+
+  
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      Name = "pf-claudia-web"
+      Role = "web"
+    }
+  }
+}
+
+#autoscaling group
+resource "aws_autoscaling_group" "wp_asg" {
+  name                = "wp-asg"
+  min_size            = 2
+  max_size            = 4
+  desired_capacity    = 2
+  vpc_zone_identifier = aws_subnet.public_subnets.*.id
+  target_group_arns   = [aws_lb_target_group.wp_tg.arn]
+
+  launch_template {
+    id      = aws_launch_template.wp_launch_template.id
+    version = "$Latest"
+  }
+
+  tag {
+    key                 = "Name"
+    value               = "pf-claudia-web"
+    propagate_at_launch = true
+  }
+  tag {
+    key                 = "Role"
+    value               = "web"
+    propagate_at_launch = true
+  }
+}
+
 resource "aws_db_instance" "rds_postgres" {
   allocated_storage = 20
   storage_type      = "gp2"
@@ -296,31 +313,6 @@ resource "aws_db_instance" "rds_postgres" {
   publicly_accessible    = false
 
   tags = {
-    Name = "WP-RDS-Postgres"
-  }
-}
-
-resource "aws_autoscaling_group" "wp_asg" {
-  name                = "wp-asg"
-  min_size            = 2
-  max_size            = 4
-  desired_capacity    = 2
-  vpc_zone_identifier = aws_subnet.public_subnets.*.id
-  target_group_arns   = [aws_lb_target_group.wp_tg.arn]
-
-  launch_template {
-    id      = aws_launch_template.wp_launch_template.id
-    version = "$Latest"
-  }
-
-  tag {
-    key                 = "Name"
-    value               = "pf-web"
-    propagate_at_launch = true
-  }
-  tag {
-    key                 = "Role"
-    value               = "web"
-    propagate_at_launch = true
+    Name = "PF-Claudia-RDS-Postgres"
   }
 }

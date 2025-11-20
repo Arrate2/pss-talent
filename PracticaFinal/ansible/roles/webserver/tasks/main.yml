@@ -1,11 +1,15 @@
 - name: 1. Instalar paquetes requeridos (Apache, PHP, dependencias)
   ansible.builtin.apt:
-    name: ['apache2', 'php', 'php-mysql', 'libapache2-mod-php', 'wget', 'unzip', 'php-pgsql', 'postgresql-client']
+    name: ['apache2', 'nginx']
     state: present
     update_cache: true
 
-- name: 4. Asegurar que el servicio apache2 esté corriendo y habilitado al arranque
+- name: 2. Asegurar que el servicio apache2 esté corriendo y habilitado al arranque
   ansible.builtin.service:
-    name: apache2
+    name: ['apache2', 'nginx']
     state: started
     enabled: true
+- name: 3. Crea un test web
+  ansible.builtin.copy:
+    dest: /var/www/html/index.html
+    content: "<h1>Esto es una presentación para Accenture</h1>"

@@ -2,7 +2,7 @@
 
 plugin: aws_ec2
 regions:
-  - us-east-1 # CONFIRMADO por la prueba de la CLI
+  - us-east-1 
 
 keyed_groups:
   - key: tags.Role
@@ -11,7 +11,6 @@ hostnames:
   - tag:Name
   - public-ip-address 
 
-# Asigna la IP privada como la variable ansible_host
 compose:
   ansible_host: public_ip_address
 filters:

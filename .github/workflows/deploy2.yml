@@ -8,9 +8,6 @@ env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   AWS_REGION: ${{ secrets.AWS_REGION }}
-  DB_NAME: "wordpress"
-  VAR_DB_USER: ${{ secrets.DB_USER }}
-  VAR_DB_PASS: ${{ secrets.DB_PASS }}
   EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
   EC2_SSH_PUBLIC_KEY: ${{ secrets.EC2_SSH_PUBLIC_KEY }}
 
@@ -29,13 +26,13 @@ jobs:
       - name: Terraform Format Check
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.6.x
-      - run: terraform fmt -check
-        working-directory: ./PracticaFinal/terraform
+          terraform_version: 1.13.x
 
       - name: Ansible Lint (Validación de sintaxis del Playbook)
         run: ansible-lint -c .ansible-lint deploy.yml
         working-directory: ./PracticaFinal/ansible
+
+      - name: Configure AWS Credentials                                                                       uses: aws-actions/configure-aws-credentials@v4                                                        with:                                                                                                   aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}                                                       aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}                                               aws-region: ${{ env.AWS_REGION }}
 
   terraform_deploy:
     needs: validation
@@ -43,13 +40,6 @@ jobs:
     steps:
       - name: Checkout del código
         uses: actions/checkout@v4
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -62,13 +52,14 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: 'terraform plan -var="db_name=${{ env.DB_NAME }}" -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" -var="db_user=${{ env.VAR_DB_USER }}" -var="db_pass=${{ env.VAR_DB_PASS }}"'
+        run: 'terraform plan -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" "'
         working-directory: PracticaFinal/terraform
 
       - name: Terraform Apply
         id: apply
-        run: 'terraform apply -auto-approve -var="db_name=${{ env.DB_NAME }}" -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" -var="db_user=${{ env.VAR_DB_USER }}" -var="db_pass=${{ env.VAR_DB_PASS }}"'
+        run: 'terraform apply -auto-approve -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" "'
         working-directory: PracticaFinal/terraform
+
       - name: Get Terraform Outputs (RDS Endpoint)
         id: output
         run: |
@@ -83,13 +74,10 @@ jobs:
       - name: Checkout del código
         uses: actions/checkout@v4
 
-      - name: Setup Python and Install Ansible
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-
-      - name: Install Dependencies
-        run: pip install ansible boto3 botocore
 
       - name: Guardar la llave SSH privada
         run: |

@@ -35,7 +35,6 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
   
   terraform_deploy:
-    name: validacion de terraform
     needs: validation
     runs-on: ubuntu-latest
     steps:

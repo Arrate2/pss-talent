@@ -1,17 +1,15 @@
-- name: 1. Instalar paquetes requeridos (Apache, PHP, dependencias)
+- name: 1. Instalar Nginx
   ansible.builtin.apt:
-    name: ['apache2', 'nginx']
+    name: nginx
     state: present
     update_cache: true
 
-- name: 2. Asegurar que el servicio apache2 esté corriendo y habilitado al arranque
+- name: 2. Asegurar que el servicio Nginx esté corriendo y habilitado al arranque
   ansible.builtin.service:
-    name: "{{ item }}"
+    name: nginx
     state: started
     enabled: yes
-  loop:
-    - apache2
-    - nginx
+
 - name: 3. Crea un test web
   ansible.builtin.copy:
     dest: /var/www/html/index.html

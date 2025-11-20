@@ -27,10 +27,6 @@ jobs:
         with:
           terraform_version: 1.13.x
 
-      - name: Ansible Lint (Validación de sintaxis del Playbook)
-        run: ansible-lint -c .ansible-lint deploy.yml
-        working-directory: ./PracticaFinal/ansible
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:

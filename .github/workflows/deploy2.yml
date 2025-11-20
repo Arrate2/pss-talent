@@ -35,9 +35,9 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
   
   terraform_deploy:
+    name: validacion de terraform
     needs: validation
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout del código
         uses: actions/checkout@v4

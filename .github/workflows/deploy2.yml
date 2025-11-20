@@ -53,12 +53,12 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: 'terraform plan -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" "'
+        run: 'terraform plan -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }} "'
         working-directory: PracticaFinal/terraform
 
       - name: Terraform Apply
         id: apply
-        run: 'terraform apply -auto-approve -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }}" "'
+        run: 'terraform apply -auto-approve -var="wordpress_public_key=${{ env.EC2_SSH_PUBLIC_KEY }} "'
         working-directory: PracticaFinal/terraform
 
       - name: Get Terraform Outputs (RDS Endpoint)

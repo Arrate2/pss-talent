@@ -1,107 +1,114 @@
 En el siguiente documento se explicaran los pasos a seguir para esta parte de la práctica
+# 🧩 Práctica Final – GitOps con Terraform, Ansible y GitHub Actions
 
-# Proyecto -- Parte 3: DevOps / Automatización
+Este repositorio contiene la solución a la **Práctica Final del módulo de GitOps / IaC**, cuyo objetivo es desplegar una arquitectura altamente disponible en AWS utilizando **Terraform**, **Ansible** y un pipeline de **CI/CD con GitHub Actions**.
 
-Este repositorio contiene la parte 3 del proyecto orientado a DevOps y
-automatización. En esta fase se despliega una infraestructura completa
-para alojar una aplicación web utilizando Terraform y Ansible, todo
-gestionado mediante un script de automatización.
+La infraestructura se construye siguiendo principios GitOps: todo el ciclo (validación, provisión y configuración) se ejecuta automáticamente desde GitHub.
 
-## 📁 Estructura del repositorio
+---
 
-    Parte3_dev/
-    ├── terraform/
-    │   ├── main.tf
-    │   ├── variables.tf
-    │   ├── outputs.tf
-    │   └── ...
-    ├── ansible/
-    │   ├── ansible.cfg
-    │   ├── site.yml
-    │   ├── inventory_aws_ec2.yml (si aplica)
-    │   ├── roles/
-    │   │   ├── webserver/
-    │   │   │   ├── tasks/
-    │   │   │   ├── templates/
-    │   │   │   └── ...
-    │   │   └── database/
-    │   │       ├── tasks/
-    │   │       └── ...
-    ├── deploy.sh
-    └── README.md
+## 🚀 Arquitectura implementada
 
-## 🚀 Flujo de despliegue
+La solución implementa una arquitectura de alta disponibilidad en AWS compuesta por:
 
-1.  **Terraform** crea la infraestructura en AWS:
-    -   VPC personalizada\
-    -   Subredes públicas\
-    -   EC2 web y EC2 base de datos\
-    -   Security groups\
-2.  `deploy.sh` ejecuta Terraform y espera a que los recursos estén
-    disponibles.\
-3.  **Ansible** configura la infraestructura:
-    -   Rol `webserver`: Apache/PHP + WordPress\
-    -   Rol `database`: instalación y configuración de MariaDB/MySQL\
-4.  La aplicación queda operativa automáticamente.
+### 🏗️ Componentes principales
+- **VPC** con subredes públicas y privadas distribuidas entre múltiples AZs.
+- **Application Load Balancer (ALB)** para distribuir tráfico HTTP/HTTPS.
+- **Auto Scaling Group (ASG)** con:
+  - *Mínimo:* 2 instancias EC2  
+  - *Máximo:* 4 instancias  
+  - Distribuidas en AZs distintas.
+- **Instancias EC2** en **subredes públicas**, configuradas mediante **Ansible**.
+- **RDS PostgreSQL** en una **subred privada**.
+- **NAT Gateway** para permitir actualizaciones de la base de datos.
 
-## 📌 Prerrequisitos
+---
 
--   AWS CLI configurado (`aws configure`)
+## 🔐 Security Groups
 
--   Terraform ≥ 1.0
+| Recurso | Reglas |
+|--------|--------|
+| **EC2 (ASG)** | Entradas: 80/443 desde SG del ALB · 22 desde 0.0.0.0/0 |
+| **ALB** | Entradas: 80/443 desde Internet |
+| **RDS PostgreSQL** | Entrada 5432 solo desde SG de las EC2 |
 
--   Ansible ≥ 2.15
+---
 
--   Python 3 + módulos:
+## 📦 Tecnologías utilizadas
 
-        pip install boto3 botocore
+- **Terraform** — Provisiona la infraestructura AWS.
+- **Ansible** — Configura las instancias EC2.
+- **GitHub Actions** — Automatiza validación, despliegue y configuración.
+- **AWS (EC2, RDS, ALB, VPC, NAT Gateway)**
 
--   Clave SSH configurada para acceder a las máquinas creadas
+---
 
-## ▶️ Cómo ejecutar el despliegue
+## 🔄 Flujo GitOps / CI-CD
 
-Ejecutar desde la carpeta raíz del proyecto:
+El repositorio incluye un workflow de GitHub Actions que:
 
-``` bash
-chmod +x deploy.sh
-./deploy.sh
-```
+1. **Valida** sintaxis de Terraform y Ansible.
+2. **Ejecuta Terraform plan/apply** para crear la infraestructura.
+3. **Ejecuta Ansible** para configurar las máquinas creadas.
+4. Se ejecuta **manualmente** mediante `workflow_dispatch`.
 
-Este script hará:
+---
 
-1.  `terraform init`
-2.  `terraform apply --auto-approve`
-3.  Espera a que las instancias estén listas
-4.  `ansible-playbook ansible/site.yml` usando el inventario dinámico o
-    estático configurado
+## 🔑 Secretos requeridos en GitHub
 
-## ⚙️ Personalización
+Configurar en **Settings → Secrets and variables → Actions**:
 
--   Editar variables en `terraform/variables.tf`
+| Secreto | Descripción |
+|---------|-------------|
+| `AWS_ACCESS_KEY_ID` | Credenciales de acceso a AWS |
+| `AWS_SECRET_ACCESS_KEY` | Credenciales de acceso a AWS |
+| `AWS_REGION` | Región donde se desplegará la infra |
+| `EC2_SSH_PRIVATE_KEY` | Llave privada para que Ansible acceda a las EC2 |
 
--   Ajustar plantilla WordPress en:
+---
 
-        ansible/roles/webserver/templates/wp-config.php.j2
+## 📁 Estructura del repositorio (propuesta)
 
--   Configurar credenciales DB en:
+.
+├── terraform/
+│ ├── main.tf
+│ ├── variables.tf
+│ ├── outputs.tf
+│ ├── networking/
+│ ├── compute/
+│ └── rds/
+├── ansible/
+│ ├── inventories/
+│ ├── roles/
+│ └── playbook.yml
+├── .github/
+│ └── workflows/
+│ └── gitops-pipeline.yml
+└── README.md
+---
 
-        ansible/roles/database/tasks/
+## ▶️ Ejecución del pipeline
 
-## 🧹 Destruir la infraestructura
+1. Configura los secretos en GitHub.
+2. Ve a **Actions** → selecciona el workflow `gitops-pipeline`.
+3. Haz clic en **Run workflow**.
 
-Para eliminar todos los recursos:
+Esto ejecutará:
 
-``` bash
-cd terraform
-terraform destroy --auto-approve
-```
+- Validación de Terraform y Ansible  
+- Creación de infraestructura  
+- Configuración mediante Ansible  
 
-## 📚 Mejoras posibles
--   Validaciones post-deploy con Ansible (HTTP 200) (parte opcional)
-        Realizadas el domingo, para probar como se hace.
+---
 
-No realizadas pero posibles:
--   Pipeline CI/CD
--   Monitoreo con CloudWatch o Prometheus
--   Balanceador de carga y autoescalado
+## 💡 Notas finales
+
+- Las instancias EC2 y la base de datos RDS utilizan el tamaño **t3.micro** aunque según el enunciado era small, esto obliga a pagos.
+- La infraestructura es completamente reproducible y destruible con `terraform destroy`.
+
+---
+
+
+
+Solo dímelo 😊
 

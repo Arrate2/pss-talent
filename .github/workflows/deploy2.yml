@@ -80,7 +80,7 @@ jobs:
       - name: Instalar Ansible
         run: |
           ansible-galaxy collection install -r ./requirements.yml
-          pip install ansible boto3 btocore
+          pip install ansible boto3 botocore
 
       - name: Guardar la llave SSH privada
         run: |

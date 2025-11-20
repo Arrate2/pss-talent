@@ -61,7 +61,7 @@ jobs:
         working-directory: PracticaFinal/terraform
 
       - name: Get Terraform Outputs (RDS Endpoint)
-      id: output
+        id: output
         run: |
           RDS_ENDPOINT=$(terraform output -raw rds_endpoint)
           echo "rds_endpoint=$RDS_ENDPOINT" >> $GITHUB_OUTPUT
